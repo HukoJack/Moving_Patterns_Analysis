@@ -1,6 +1,6 @@
 # Moving Pattern Analysis of Data Collected from Personal Activity Monitoring Device
 
-This is an educational project, which is the part of [Data Science Specialization](https://www.coursera.org/specialization/jhudatascience/1?utm_medium=listingPage) provided by Johns Hopkins University on Coursera.
+This is an educational project, which is the part of [Data Science Specialization](https://www.coursera.org/specialization/jhudatascience/1?utm_medium=listingPage) provided by Johns Hopkins University on [Coursera](https://www.coursera.org/).
 
 You can explore results here: [Report](http://htmlpreview.github.io/?https://github.com/HukoJack/Moving_Patterns_Analysis/blob/master/PA1_template.html)
 
