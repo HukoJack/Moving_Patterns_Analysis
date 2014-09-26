@@ -1,0 +1,168 @@
+# Reproducible Research: Peer Assessment 1
+
+```{r setoptions, echo=FALSE}
+opts_chunk$set(echo=TRUE)
+```
+
+
+## Loading and preprocessing the data
+
+We load and transform data into a format with appropriate data classes.
+
+```{r loaddata, cache=TRUE}
+if (!file.exists("activity.csv")) {
+    unzip("activity.zip", overwrite=FALSE)
+}
+data <- read.table("activity.csv", header=TRUE, sep=",", 
+                   colClasses=c("numeric", "character", "numeric"), 
+                   na.strings="NA", nrows=17569, allowEscapes=TRUE, quote='"')
+data$date <- as.Date(data$date, format="%Y-%m-%d")
+str(data)
+```
+
+
+
+## What is mean total number of steps taken per day?
+
+In order to obtain mean and median number of steps per day, at first we sum 
+data for all 5 minute intervals for each date. Then we calculate mean, median, 
+and build a histogram of the total number of steps per day in October and 
+November 2012.
+
+```{r daysummary1}
+day_summary <- tapply(data$steps, data$date, sum, na.rm=TRUE)
+mean(day_summary)
+median(day_summary)
+```
+
+```{r globaverage, fig.height=6, fig.width=6}
+hist(day_summary, breaks=15, xlim=c(0, 25000), ylim=c(0, 20), cex.lab=1.3,  
+     xlab="Number of steps per day", col="steelblue",  
+     main=paste("Histogram of the total number of steps",  
+                "per day\n from anonymous individual. \n",  
+                "Collected in October-November, 2012"))
+```
+
+
+
+## What is the average daily activity pattern?
+
+At this step we calculate the average number of steps taken for each 5 minute 
+time interval throughout a day.
+
+```{r dayaverage, fig.height=6, fig.width=6}
+time_summary <- tapply(data$steps, data$interval, mean, na.rm=TRUE)
+plot(as.numeric(names(time_summary)), time_summary, type="l", cex.lab=1.3,  
+     ylab="Average number of steps", xlab="Day timeline, minutes", 
+     col="steelblue",  
+     main=paste("Average number of steps throughout the day",  
+                "from \n anonymous individual. Collected in",  
+                " \nOctober-November, 2012"))
+```
+
+Now we look for the 5 minute time interval where the number of steps is maximal 
+on average throughout the day.
+
+```{r maxsteps}
+max_steps <- as.numeric(names(which.max(time_summary)))
+max_steps_hours <- max_steps %/% 60
+max_steps_minutes <- max_steps %% 60
+```
+
+The maximal average number of steps is for `r max_steps` minutes time interval, 
+which corresponds time between `r max_steps_hours`:`r max_steps_minutes - 5` 
+and `r max_steps_hours`:`r max_steps_minutes`.
+
+
+
+## Imputing missing values
+
+We calculate the total number of missing values in the dataset (i.e. the total 
+number of rows with NAs).
+
+```{r NAnum}
+sum(!complete.cases(data))
+```
+
+We have 2304 rows with NA in dataset. 
+
+Now we are creating a new dataset that is equal to the original dataset but with 
+the missing data filled in with mean for 5-minute interval that corresponds to 
+missing value.
+
+```{r removeNA}
+data_filled <- data
+for (x in 1:length(data_filled$steps)) {
+    if (is.na(data_filled$steps[x])) {
+        data_filled$steps[x] = time_summary[as.character(data_filled$interval[x])][[1]]
+    }
+}
+head(data)
+head(data_filled)
+```
+
+We again calculate mean, median, and build a histogram of the total number of 
+steps per day, but this time for dataset with filled NAs. 
+
+```{r daysummary2}
+day_summary <- tapply(data_filled$steps, data_filled$date, sum, na.rm=TRUE)
+mean(day_summary)
+median(day_summary)
+```
+
+```{r globalsteps, fig.height=6, fig.width=6}
+hist(day_summary, breaks=15, cex.lab=1.3, ylim=c(0, 25), xlim=c(0, 25000),  
+     xlab="Number of steps per day", col="slategrey",  
+     main=paste("Histogram of the total ",  
+                "number of steps per day from ",  
+                "anonymous\n individual, collected in October-November, 2012 "))
+```
+
+As we can see, this graph differ significantly from the histogram for global 
+average number of steps without removed NAs. Now we can see no peak at 0 and
+significantly higher main peak. Also removing NA makes mean and median equal. 
+This also differ from the first histogram and it is due to the fact that we 
+removed skew of distribution.
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+Now lets exemine if the pattern of number of steps is differ for weekdays and 
+weekends. At first we create a new variable weekday, which is factor with two 
+levels “weekday” and “weekend”.
+
+```{r addweekday}
+weekday <- factor(as.POSIXlt(data_filled$date)$wday == 0 | as.POSIXlt(data_filled$date)$wday == 6,  
+                  labels=c("weekday", "weekend"))
+data_filled$weekday <- weekday
+str(data_filled)
+```
+
+Now we are making a panel plot containing a time series plot of the 5-minute 
+interval and the average number of steps taken, averaged across all weekday 
+days or weekend days.
+
+```{r timeseries}
+head(data_filled)
+agg <- aggregate(data_filled$steps, 
+                 by=list(data_filled$interval, data_filled$weekday), FUN=mean)
+colnames(agg) <- c("interval", "weekday", "steps")
+head(agg)
+library(lattice)
+xyplot(steps ~ interval | weekday, data=agg, layout=c(1, 2), type="l",  
+       xlab=list(label="Time, minutes", cex=1.5),  
+       ylab=list(label="Average number of steps", cex=1.5), 
+       main=paste("Distribution of the average number of steps throughout ",  
+                  "the day\n for anonymous individual. ",  
+                  "Collected in October-November, 2012"))
+```
+
+As we can see, there are different moving patterns for weekend and weekdays. 
+On weekdays average number of steps is higher in the morning and lower in the 
+rest of the day comparing to weekends.
+
+
+
+The data was provided by Reproducible Research courses, Coursera.
+Fork from [rdpeng](https://github.com/rdpeng/RepData_PeerAssessment1)
