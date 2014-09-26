@@ -1,13 +1,49 @@
-# Reproducible Research: Peer Assessment 1
+# Moving Pattern Analysis of Data Collected from Personal Activity Monitoring Device
 
-```{r setoptions, echo=FALSE}
-opts_chunk$set(echo=TRUE)
-```
+This is an educational project, which is the part of [Data Science Specialization](https://www.coursera.org/specialization/jhudatascience/1?utm_medium=listingPage) provided by Johns Hopkins University on Coursera.
 
+## Introduction
 
-## Loading and preprocessing the data
+It is now possible to collect a large amount of data about personal
+movement using activity monitoring devices such as a
+[Fitbit](http://www.fitbit.com), [Nike
+Fuelband](http://www.nike.com/us/en_us/c/nikeplus-fuelband), or
+[Jawbone Up](https://jawbone.com/up). These type of devices are part of
+the "quantified self" movement - a group of enthusiasts who take
+measurements about themselves regularly to improve their health, to
+find patterns in their behavior, or because they are tech geeks. But
+these data remain under-utilized both because the raw data are hard to
+obtain and there is a lack of statistical methods and software for
+processing and interpreting the data.
 
-We load and transform data into a format with appropriate data classes.
+## Data
+
+The data for this assignment can be downloaded from the [Coursera](https://www.coursera.org/) web
+site:
+
+* Dataset: [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip) [52K]
+
+It consists of data from personal activity monitoring
+device. This device collects data at 5 minute intervals through out the
+day. The data consists of two months of data from an anonymous
+individual collected during the months of October and November, 2012
+and include the number of steps taken in 5 minute intervals each day.
+
+The variables included in this dataset are:
+
+* **steps**: Number of steps taking in a 5-minute interval (missing
+    values are coded as `NA`)
+
+* **date**: The date on which the measurement was taken in YYYY-MM-DD
+    format
+
+* **interval**: Identifier for the 5-minute interval in which
+    measurement was taken
+
+The dataset is stored in a comma-separated-value (CSV) file and there
+are a total of 17,568 observations in this dataset.
+
+Data was loaded and transformed to appropriate format with correctly represented date-time.
 
 ```{r loaddata, cache=TRUE}
 if (!file.exists("activity.csv")) {
@@ -22,11 +58,11 @@ str(data)
 
 
 
-## What is mean total number of steps taken per day?
+## What are the statistical parameters of the number of steps taken per day?
 
-In order to obtain mean and median number of steps per day, at first we sum 
-data for all 5 minute intervals for each date. Then we calculate mean, median, 
-and build a histogram of the total number of steps per day in October and 
+In order to obtain mean and median number of steps per day was summed up data 
+for all 5 minute intervals for each date. Then mean and median were calculated and 
+was built a histogram of the total number of steps taken per day in October and 
 November 2012.
 
 ```{r daysummary1}
@@ -47,8 +83,8 @@ hist(day_summary, breaks=15, xlim=c(0, 25000), ylim=c(0, 20), cex.lab=1.3,
 
 ## What is the average daily activity pattern?
 
-At this step we calculate the average number of steps taken for each 5 minute 
-time interval throughout a day.
+The average number of steps taken for each 5 minute time interval throughout a 
+day was calculated.
 
 ```{r dayaverage, fig.height=6, fig.width=6}
 time_summary <- tapply(data$steps, data$interval, mean, na.rm=TRUE)
@@ -60,7 +96,7 @@ plot(as.numeric(names(time_summary)), time_summary, type="l", cex.lab=1.3,
                 " \nOctober-November, 2012"))
 ```
 
-Now we look for the 5 minute time interval where the number of steps is maximal 
+Then we found the 5 minute time interval where the number of steps is maximal 
 on average throughout the day.
 
 ```{r maxsteps}
@@ -69,26 +105,24 @@ max_steps_hours <- max_steps %/% 60
 max_steps_minutes <- max_steps %% 60
 ```
 
-The maximal average number of steps is for `r max_steps` minutes time interval, 
+The maximal average number of steps was for `r max_steps` minutes time interval, 
 which corresponds time between `r max_steps_hours`:`r max_steps_minutes - 5` 
 and `r max_steps_hours`:`r max_steps_minutes`.
 
-
-
 ## Imputing missing values
 
-We calculate the total number of missing values in the dataset (i.e. the total 
-number of rows with NAs).
+The total number of missing values in the dataset (i.e. the total number of rows 
+with NAs) was calculated.
 
 ```{r NAnum}
 sum(!complete.cases(data))
 ```
 
-We have 2304 rows with NA in dataset. 
+There are 2304 rows with NA in dataset. 
 
-Now we are creating a new dataset that is equal to the original dataset but with 
-the missing data filled in with mean for 5-minute interval that corresponds to 
-missing value.
+In order to impute NA values we created a new dataset that was equal to the 
+original dataset but with the missing data filled in with mean for 5-minute 
+interval that corresponds to given missing value.
 
 ```{r removeNA}
 data_filled <- data
@@ -101,8 +135,8 @@ head(data)
 head(data_filled)
 ```
 
-We again calculate mean, median, and build a histogram of the total number of 
-steps per day, but this time for dataset with filled NAs. 
+After NA imputaion we calculated mean, median again, and built a histogram of 
+the total number of steps per day, but this time for dataset with filled NAs. 
 
 ```{r daysummary2}
 day_summary <- tapply(data_filled$steps, data_filled$date, sum, na.rm=TRUE)
@@ -119,18 +153,15 @@ hist(day_summary, breaks=15, cex.lab=1.3, ylim=c(0, 25), xlim=c(0, 25000),
 ```
 
 As we can see, this graph differ significantly from the histogram for global 
-average number of steps without removed NAs. Now we can see no peak at 0 and
-significantly higher main peak. Also removing NA makes mean and median equal. 
-This also differ from the first histogram and it is due to the fact that we 
-removed skew of distribution.
-
-
+average number of steps without removed NAs. Now there are no peak at 0 in histogram and
+we have significantly higher main peak. Also removing NA makes mean and median equal, 
+which means that data no longer skewed.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-Now lets exemine if the pattern of number of steps is differ for weekdays and 
-weekends. At first we create a new variable weekday, which is factor with two 
-levels “weekday” and “weekend”.
+At the next stage we exemined if the pattern of number of steps is differ for 
+weekdays and weekends. At first we created a new variable "weekday", which is a 
+factor with two levels “weekday” and “weekend”.
 
 ```{r addweekday}
 weekday <- factor(as.POSIXlt(data_filled$date)$wday == 0 | as.POSIXlt(data_filled$date)$wday == 6,  
@@ -139,7 +170,7 @@ data_filled$weekday <- weekday
 str(data_filled)
 ```
 
-Now we are making a panel plot containing a time series plot of the 5-minute 
+After that we made a panel plot containing a time series plot of the 5-minute 
 interval and the average number of steps taken, averaged across all weekday 
 days or weekend days.
 
@@ -163,6 +194,4 @@ On weekdays average number of steps is higher in the morning and lower in the
 rest of the day comparing to weekends.
 
 
-
-The data was provided by Reproducible Research courses, Coursera.
-Fork from [rdpeng](https://github.com/rdpeng/RepData_PeerAssessment1)
+The data was kindly provided by Data Science Specialization courses, Coursera.
